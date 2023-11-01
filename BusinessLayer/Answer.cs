@@ -9,7 +9,6 @@ namespace BusinessLayer
 {
     public class Answer
     {
-
         public DateTime Date { get; set; }
 
         public int GameId { get; set; }
