@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,15 +21,17 @@ namespace DataLayer
         {
             try
             {
+                object[] keys = new object[4];
                 List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
 
-                foreach (HeroProfile heroprofile in item.HeroProfiles)
+                foreach (HeroProfile heroProfile in item.HeroProfiles)
                 {
-                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(heroprofile.ValueId, heroprofile.GameId, heroprofile.HeroId, heroprofile.CategoryId);
+                    keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
 
                     if (heroprofileFromDb is null)
                     {
-                        heroprofiles.Add(heroprofile);
+                        heroprofiles.Add(heroProfile);
                     }
                     else
                     {
@@ -51,7 +54,7 @@ namespace DataLayer
         {
             try
             {
-                HeroMetadata herometadataFromDb = await ReadAsync(key);
+                HeroMetadata herometadataFromDb = await ReadAsync(key, false, false);
 
                 if (herometadataFromDb == null)
                 {
@@ -125,15 +128,17 @@ namespace DataLayer
 
                 if (useNavigationalProperties)
                 {
+                    object[] keys = new object[4];
                     List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
 
-                    foreach (HeroProfile heroprofile in item.HeroProfiles)
+                    foreach (HeroProfile heroProfile in item.HeroProfiles)
                     {
-                        HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(heroprofile.ValueId, heroprofile.GameId, heroprofile.HeroId, heroprofile.CategoryId);
+                        keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                        HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
 
                         if (heroprofileFromDb is null)
                         {
-                            heroprofiles.Add(heroprofile);
+                            heroprofiles.Add(heroProfile);
                         }
                         else
                         {

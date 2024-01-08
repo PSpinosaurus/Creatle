@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,15 +20,17 @@ namespace DataLayer
         {
             try
             {
+                object[] keys = new object[4];
                 List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroesProfiles.Count);
 
-                foreach (HeroProfile heroprofile in item.HeroesProfiles)
+                foreach (HeroProfile heroProfile in item.HeroesProfiles)
                 {
-                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(heroprofile.ValueId, heroprofile.GameId, heroprofile.HeroId, heroprofile.CategoryId);
+                    keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
 
                     if (heroprofileFromDb is null)
                     {
-                        heroprofiles.Add(heroprofile);
+                        heroprofiles.Add(heroProfile);
                     }
                     else
                     {
@@ -39,8 +42,8 @@ namespace DataLayer
 
                 foreach (Answer answer in item.Answers)
                 {
-                    Answer answerFromDb = await dbContext.Answers.FindAsync(answer.GameId, answer.CategoryId, answer.Date);
-
+                    keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
+                    Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
                     if (answerFromDb is null)
                     {
                         answers.Add(answer);
@@ -67,7 +70,7 @@ namespace DataLayer
         {
             try
             {
-                Game gameFromDb = await ReadAsync(key);
+                Game gameFromDb = await ReadAsync(key, false, false);
 
                 if (gameFromDb == null)
                 {
@@ -145,15 +148,17 @@ namespace DataLayer
 
                 if (useNavigationalProperties)
                 {
+                    object[] keys = new object[4];
                     List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroesProfiles.Count);
 
-                    foreach(HeroProfile heroprofile in item.HeroesProfiles)
+                    foreach(HeroProfile heroProfile in item.HeroesProfiles)
                     {
-                        HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(heroprofile.ValueId, heroprofile.GameId, heroprofile.HeroId, heroprofile.CategoryId);
+                        keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                        HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
 
                         if (heroprofileFromDb is null)
                         {
-                            heroprofiles.Add(heroprofile);
+                            heroprofiles.Add(heroProfile);
                         }
                         else
                         {
@@ -165,7 +170,8 @@ namespace DataLayer
 
                     foreach (Answer answer in item.Answers)
                     {
-                        Answer answerFromDb = await dbContext.Answers.FindAsync(answer.GameId, answer.CategoryId, answer.Date);
+                        keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
+                        Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
 
                         if (answerFromDb is null)
                         {

@@ -21,10 +21,11 @@ namespace DataLayer
             try
             {
                 List<Answer> answers = new List<Answer>(item.Answers.Count);
-
+                object[] keys = new object[3];
                 foreach (Answer answer in item.Answers)
                 {
-                    Answer answerFromDb = await dbContext.Answers.FindAsync(answer.GameId, answer.CategoryId, answer.Date);
+                    keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
+                    Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
 
                     if (answerFromDb is null)
                     {
@@ -53,11 +54,11 @@ namespace DataLayer
                 }
 
                 List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
-
                 foreach (HeroProfile heroProfile in item.HeroProfiles)
                 {
-                    HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(heroProfile.GameId, heroProfile.ValueId, heroProfile.HeroId, heroProfile.CategoryId);
-
+                    keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                    HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
+                    
                     if (heroProfileFromDb is null)
                     {
                         heroprofiles.Add(heroProfile);
@@ -75,7 +76,7 @@ namespace DataLayer
                 dbContext.Categories.Add(item);
                 await dbContext.SaveChangesAsync();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
@@ -85,7 +86,7 @@ namespace DataLayer
         {
             try
             {
-                Categories categoryFromDb = await ReadAsync(key);
+                Categories categoryFromDb = await ReadAsync(key, false, false);
 
                 if (categoryFromDb == null)
                 {
@@ -95,7 +96,7 @@ namespace DataLayer
                 dbContext.Categories.Remove(categoryFromDb);
                 await dbContext.SaveChangesAsync();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
@@ -122,7 +123,7 @@ namespace DataLayer
 
                 return await query.ToListAsync();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
@@ -149,7 +150,7 @@ namespace DataLayer
 
                 return await query.FirstOrDefaultAsync(c => c.Id == key);
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }
@@ -166,10 +167,11 @@ namespace DataLayer
                 if (useNavigationalProperties)
                 {
                     List<Answer> answers = new List<Answer>(item.Answers.Count);
-
-                    foreach(Answer answer in item.Answers)
+                    object[] keys = new object[3];
+                    foreach (Answer answer in item.Answers)
                     {
-                        Answer answerFromDb = await dbContext.Answers.FindAsync(answer.GameId, answer.CategoryId, answer.Date);
+                        keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
+                        Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
 
                         if (answerFromDb is null)
                         {
@@ -183,7 +185,7 @@ namespace DataLayer
 
                     List<CategoriesValues> categoriesvalues = new List<CategoriesValues>(item.CategoriesValues.Count);
 
-                    foreach(CategoriesValues category in item.CategoriesValues)
+                    foreach (CategoriesValues category in item.CategoriesValues)
                     {
                         CategoriesValues categoriesValuesFromDb = await dbContext.CategoriesValues.FindAsync(category.Id);
 
@@ -199,9 +201,10 @@ namespace DataLayer
 
                     List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
 
-                    foreach(HeroProfile heroProfile in item.HeroProfiles)
+                    foreach (HeroProfile heroProfile in item.HeroProfiles)
                     {
-                        HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(heroProfile.GameId, heroProfile.ValueId, heroProfile.HeroId, heroProfile.CategoryId);
+                        keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                        HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
 
                         if (heroProfileFromDb is null)
                         {
@@ -217,10 +220,10 @@ namespace DataLayer
                     categoryFromDb.CategoriesValues = categoriesvalues;
                     categoryFromDb.HeroProfiles = heroprofiles;
                 }
-                
+
                 await dbContext.SaveChangesAsync();
             }
-            catch(Exception)
+            catch (Exception)
             {
                 throw;
             }

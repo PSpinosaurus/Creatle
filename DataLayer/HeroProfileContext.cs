@@ -33,7 +33,7 @@ namespace DataLayer
         {
             try
             {
-                HeroProfile heroprofileFromDb = await ReadAsync(key);
+                HeroProfile heroprofileFromDb = await ReadAsync(key, false, false);
 
                 if (heroprofileFromDb == null)
                 {

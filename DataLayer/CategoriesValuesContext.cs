@@ -33,7 +33,7 @@ namespace DataLayer
         {
             try
             {
-                CategoriesValues categoriesvaluesFromDb = await ReadAsync(key);
+                CategoriesValues categoriesvaluesFromDb = await ReadAsync(key, false, false);
 
                 if (categoriesvaluesFromDb == null)
                 {

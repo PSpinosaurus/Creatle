@@ -34,7 +34,7 @@ namespace DataLayer
         {
             try
             {
-                Answer answerFromDb = await ReadAsync(key);
+                Answer answerFromDb = await ReadAsync(key, false, false);
 
                 if (answerFromDb == null)
                 {
