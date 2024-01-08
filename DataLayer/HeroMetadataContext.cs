@@ -20,6 +20,24 @@ namespace DataLayer
         {
             try
             {
+                List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
+
+                foreach (HeroProfile heroprofile in item.HeroProfiles)
+                {
+                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(heroprofile.ValueId, heroprofile.GameId, heroprofile.HeroId, heroprofile.CategoryId);
+
+                    if (heroprofileFromDb is null)
+                    {
+                        heroprofiles.Add(heroprofile);
+                    }
+                    else
+                    {
+                        heroprofiles.Add(heroprofileFromDb);
+                    }
+                }
+
+                item.HeroProfiles = heroprofiles;
+
                 dbContext.HeroMetadata.Add(item);
                 await dbContext.SaveChangesAsync();
             }

@@ -20,6 +20,58 @@ namespace DataLayer
         {
             try
             {
+                List<Answer> answers = new List<Answer>(item.Answers.Count);
+
+                foreach (Answer answer in item.Answers)
+                {
+                    Answer answerFromDb = await dbContext.Answers.FindAsync(answer.GameId, answer.CategoryId, answer.Date);
+
+                    if (answerFromDb is null)
+                    {
+                        answers.Add(answer);
+                    }
+                    else
+                    {
+                        answers.Add(answerFromDb);
+                    }
+                }
+
+                List<CategoriesValues> categoriesvalues = new List<CategoriesValues>(item.CategoriesValues.Count);
+
+                foreach (CategoriesValues category in item.CategoriesValues)
+                {
+                    CategoriesValues categoriesValuesFromDb = await dbContext.CategoriesValues.FindAsync(category.Id);
+
+                    if (categoriesValuesFromDb is null)
+                    {
+                        categoriesvalues.Add(category);
+                    }
+                    else
+                    {
+                        categoriesvalues.Add(categoriesValuesFromDb);
+                    }
+                }
+
+                List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
+
+                foreach (HeroProfile heroProfile in item.HeroProfiles)
+                {
+                    HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(heroProfile.GameId, heroProfile.ValueId, heroProfile.HeroId, heroProfile.CategoryId);
+
+                    if (heroProfileFromDb is null)
+                    {
+                        heroprofiles.Add(heroProfile);
+                    }
+                    else
+                    {
+                        heroprofiles.Add(heroProfileFromDb);
+                    }
+                }
+
+                item.Answers = answers;
+                item.CategoriesValues = categoriesvalues;
+                item.HeroProfiles = heroprofiles;
+
                 dbContext.Categories.Add(item);
                 await dbContext.SaveChangesAsync();
             }

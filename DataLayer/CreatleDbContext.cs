@@ -19,7 +19,7 @@ namespace DataLayer
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=DESKTOP-C63GQT7\\SQLEXPRESS;Database=CreatleDb;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=DESKTOP-40HMVT5\\SQLEXPRESS;Database=CreatleDb;Trusted_Connection=True;");
             }
             base.OnConfiguring(optionsBuilder);
         }

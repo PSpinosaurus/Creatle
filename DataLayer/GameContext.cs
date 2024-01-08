@@ -19,6 +19,41 @@ namespace DataLayer
         {
             try
             {
+                List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroesProfiles.Count);
+
+                foreach (HeroProfile heroprofile in item.HeroesProfiles)
+                {
+                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(heroprofile.ValueId, heroprofile.GameId, heroprofile.HeroId, heroprofile.CategoryId);
+
+                    if (heroprofileFromDb is null)
+                    {
+                        heroprofiles.Add(heroprofile);
+                    }
+                    else
+                    {
+                        heroprofiles.Add(heroprofileFromDb);
+                    }
+                }
+
+                List<Answer> answers = new List<Answer>(item.Answers.Count);
+
+                foreach (Answer answer in item.Answers)
+                {
+                    Answer answerFromDb = await dbContext.Answers.FindAsync(answer.GameId, answer.CategoryId, answer.Date);
+
+                    if (answerFromDb is null)
+                    {
+                        answers.Add(answer);
+                    }
+                    else
+                    {
+                        answers.Add(answerFromDb);
+                    }
+                }
+
+                item.HeroesProfiles = heroprofiles;
+                item.Answers = answers;
+
                 dbContext.Games.Add(item);
                 await dbContext.SaveChangesAsync();
             }
