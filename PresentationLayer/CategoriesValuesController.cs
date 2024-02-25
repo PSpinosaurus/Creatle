@@ -7,48 +7,53 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessLayer;
 using DataLayer;
+using ServiceLayer;
+using System.Reflection.Metadata.Ecma335;
 
 namespace PresentationLayer
 {
     public class CategoriesValuesController : Controller
     {
-        private readonly CreatleDbContext _context;
+        private readonly CategoriesValuesManager _categoriesValuesManager;
+        private readonly CategoriesManager _categoriesManager;
+        private readonly HeroProfileManager _heroProfileManager;
+        private readonly AnswerManager _answerManager;
 
-        public CategoriesValuesController(CreatleDbContext context)
+        public CategoriesValuesController(CategoriesValuesManager categoriesValuesManager, CategoriesManager categoriesManager, HeroProfileManager heroProfileManager, AnswerManager answerManager)
         {
-            _context = context;
+            _categoriesValuesManager = categoriesValuesManager;
+            _categoriesManager = categoriesManager;
+            _heroProfileManager = heroProfileManager;
+            _answerManager = answerManager;
         }
 
         // GET: CategoriesValues
         public async Task<IActionResult> Index()
         {
-            var creatleDbContext = _context.CategoriesValues.Include(c => c.Category);
-            return View(await creatleDbContext.ToListAsync());
+            return View(await _categoriesValuesManager.ReadAllAsync(true));
         }
 
         // GET: CategoriesValues/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.CategoriesValues == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var categoriesValues = await _context.CategoriesValues
-                .Include(c => c.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (categoriesValues == null)
+            var answer = await _categoriesValuesManager.ReadAsync((int)id);
+            if (answer == null)
             {
                 return NotFound();
             }
 
-            return View(categoriesValues);
+            return View(answer);
         }
 
         // GET: CategoriesValues/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
+            await LoadNavigationalProperties();
             return View();
         }
 
@@ -59,31 +64,34 @@ namespace PresentationLayer
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Id,Value,CategoryId")] CategoriesValues categoriesValues)
         {
+            categoriesValues.Category = await _categoriesManager.ReadAsync(categoriesValues.CategoryId);
+
             if (ModelState.IsValid)
             {
-                _context.Add(categoriesValues);
-                await _context.SaveChangesAsync();
+                await _categoriesValuesManager.CreateAsync(categoriesValues);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", categoriesValues.CategoryId);
+
+            await LoadNavigationalProperties();
             return View(categoriesValues);
         }
 
         // GET: CategoriesValues/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.CategoriesValues == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var categoriesValues = await _context.CategoriesValues.FindAsync(id);
-            if (categoriesValues == null)
+            var answer = await _categoriesValuesManager.ReadAsync((int)id, true, true);
+            if (answer == null)
             {
                 return NotFound();
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", categoriesValues.CategoryId);
-            return View(categoriesValues);
+
+            await LoadNavigationalProperties();
+            return View(answer);
         }
 
         // POST: CategoriesValues/Edit/5
@@ -102,12 +110,11 @@ namespace PresentationLayer
             {
                 try
                 {
-                    _context.Update(categoriesValues);
-                    await _context.SaveChangesAsync();
+                    await _categoriesValuesManager.UpdateAsync(categoriesValues, true);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!CategoriesValuesExists(categoriesValues.Id))
+                    if (!await CategoriesValuesExists(categoriesValues.Id))
                     {
                         return NotFound();
                     }
@@ -118,21 +125,20 @@ namespace PresentationLayer
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", categoriesValues.CategoryId);
+
+            await LoadNavigationalProperties();
             return View(categoriesValues);
         }
 
         // GET: CategoriesValues/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.CategoriesValues == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var categoriesValues = await _context.CategoriesValues
-                .Include(c => c.Category)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var categoriesValues = await _categoriesValuesManager.ReadAsync((int)id, true, true);
             if (categoriesValues == null)
             {
                 return NotFound();
@@ -146,23 +152,20 @@ namespace PresentationLayer
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.CategoriesValues == null)
-            {
-                return Problem("Entity set 'CreatleDbContext.CategoriesValues'  is null.");
-            }
-            var categoriesValues = await _context.CategoriesValues.FindAsync(id);
-            if (categoriesValues != null)
-            {
-                _context.CategoriesValues.Remove(categoriesValues);
-            }
-            
-            await _context.SaveChangesAsync();
+            await _categoriesValuesManager.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool CategoriesValuesExists(int id)
+        private async Task<bool> CategoriesValuesExists(int id)
         {
-          return (_context.CategoriesValues?.Any(e => e.Id == id)).GetValueOrDefault();
+            return await _categoriesValuesManager.ReadAsync(id) != null;
+        }
+
+        private async Task LoadNavigationalProperties()
+        {
+            ViewData["Category"] = new SelectList(await _categoriesManager.ReadAllAsync());
+            ViewData["HeroProfiles"] = new SelectList(await _heroProfileManager.ReadAllAsync());
+            ViewData["Answers"] = new SelectList(await _answerManager.ReadAllAsync());
         }
     }
 }

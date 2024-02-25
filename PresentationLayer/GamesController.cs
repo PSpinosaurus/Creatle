@@ -7,47 +7,50 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessLayer;
 using DataLayer;
+using ServiceLayer;
 
 namespace PresentationLayer
 {
     public class GamesController : Controller
     {
-        private readonly CreatleDbContext _context;
+        private readonly GameManager _gameManager;
+        private readonly HeroProfileManager _heroProfileManager;
+        private readonly AnswerManager _answerManager;
 
-        public GamesController(CreatleDbContext context)
+        public GamesController(GameManager gameManager, HeroProfileManager heroProfileManager, AnswerManager answerManager)
         {
-            _context = context;
+            _gameManager = gameManager;
+            _heroProfileManager = heroProfileManager;
+            _answerManager = answerManager;
         }
 
         // GET: Games
         public async Task<IActionResult> Index()
         {
-              return _context.Games != null ? 
-                          View(await _context.Games.ToListAsync()) :
-                          Problem("Entity set 'CreatleDbContext.Games'  is null.");
+              return View(await _gameManager.ReadAllAsync(true));
         }
 
         // GET: Games/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-            if (id == null || _context.Games == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var game = await _context.Games
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (game == null)
+            var answer = await _gameManager.ReadAsync((int)id);
+            if (answer == null)
             {
                 return NotFound();
             }
 
-            return View(game);
+            return View(answer);
         }
 
         // GET: Games/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            await LoadNavigationalProperties();
             return View();
         }
 
@@ -60,8 +63,7 @@ namespace PresentationLayer
         {
             if (ModelState.IsValid)
             {
-                _context.Add(game);
-                await _context.SaveChangesAsync();
+                await _gameManager.CreateAsync(game);
                 return RedirectToAction(nameof(Index));
             }
             return View(game);
@@ -70,16 +72,18 @@ namespace PresentationLayer
         // GET: Games/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
-            if (id == null || _context.Games == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var game = await _context.Games.FindAsync(id);
+            var game = await _gameManager.ReadAsync((int)id);
             if (game == null)
             {
                 return NotFound();
             }
+
+            await LoadNavigationalProperties();
             return View(game);
         }
 
@@ -99,12 +103,11 @@ namespace PresentationLayer
             {
                 try
                 {
-                    _context.Update(game);
-                    await _context.SaveChangesAsync();
+                    await _gameManager.UpdateAsync(game, true);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!GameExists(game.Id))
+                    if (!await GameExists(game.Id))
                     {
                         return NotFound();
                     }
@@ -115,19 +118,20 @@ namespace PresentationLayer
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            await LoadNavigationalProperties();
             return View(game);
         }
 
         // GET: Games/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
-            if (id == null || _context.Games == null)
+            if (id == null)
             {
                 return NotFound();
             }
 
-            var game = await _context.Games
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var game = await _gameManager.ReadAsync((int)id, true, true);
             if (game == null)
             {
                 return NotFound();
@@ -141,23 +145,19 @@ namespace PresentationLayer
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            if (_context.Games == null)
-            {
-                return Problem("Entity set 'CreatleDbContext.Games'  is null.");
-            }
-            var game = await _context.Games.FindAsync(id);
-            if (game != null)
-            {
-                _context.Games.Remove(game);
-            }
-            
-            await _context.SaveChangesAsync();
+            await _gameManager.DeleteAsync((int)id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool GameExists(int id)
+        private async Task LoadNavigationalProperties()
         {
-          return (_context.Games?.Any(e => e.Id == id)).GetValueOrDefault();
+            ViewData["Answers"] = new SelectList(await _answerManager.ReadAllAsync());
+            ViewData["HeroProfiles"] = new SelectList(await _heroProfileManager.ReadAllAsync());
+        }
+
+        private async Task<bool> GameExists(int id)
+        {
+          return await _gameManager.ReadAsync(id) != null;
         }
     }
 }
