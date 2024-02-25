@@ -9,6 +9,7 @@ using BusinessLayer;
 using DataLayer;
 using ServiceLayer;
 using System.ComponentModel;
+using System.Drawing;
 
 namespace PresentationLayer
 {
@@ -37,16 +38,19 @@ namespace PresentationLayer
         }
 
         // GET: Answers/Details/5
-        [HttpGet("{Date}/d/{CategoryId}/{GameId}")]
-        public async Task<IActionResult> Details(DateTime? date, int? CategoryId, int? GameId) // this is for composite pk 
+        [HttpGet("[action]/{Year}/{Month}/{Day}/{CategoryId}/{GameId}")]
+        public async Task<IActionResult> Details(int Year, int Month, int Day, int? CategoryId, int? GameId) // this is for composite pk 
         {
-            if (date == null || CategoryId == null || GameId == null)
+            await LoadNavigationalProperties();
+
+            if ( CategoryId == null || GameId == null)
             {
                 return NotFound();
             }
-
-            object[] key = new object[] {date, CategoryId, GameId}; // only for composite key
-            var answer = await _answerManager.ReadAsync(key); // change this here
+            string date = Year + "-" + Month + "-" + Day;  
+            DateTime actualDate = DateTime.Parse(date);
+            object[] key = new object[] {actualDate, CategoryId, GameId}; // only for composite key
+            var answer = await _answerManager.ReadAsync(key, true); // change this here
             if (answer == null)
             {
                 return NotFound();
@@ -71,7 +75,7 @@ namespace PresentationLayer
         {
             answer.CategoryValue = await _categoriesValuesManager.ReadAsync(answer.CategoryValueId); // add the navigational properties since you cannot bind them
 
-            if (ModelState.IsValid)
+            if (answer.CategoryValue != null)
             {
                 await _answerManager.CreateAsync(answer); // change here
                 return RedirectToAction(nameof(Index)); 
@@ -82,15 +86,16 @@ namespace PresentationLayer
         }
 
         // GET: Answers/Edit/5
-        [HttpGet("{Date}/ed/{CategoryId}/{GameId}")]
-        public async Task<IActionResult> Edit(DateTime? date, int? CategoryId, int? GameId)
+        [HttpGet("[action]/{Year}/{Month}/{Day}/{CategoryId}/{GameId}")]
+        public async Task<IActionResult> Edit(int Year, int Month, int Day, int? CategoryId, int? GameId)
         {
-            if (date == null || CategoryId == null || GameId == null) // for composite 
+            if (CategoryId == null || GameId == null) // for composite 
             {
                 return NotFound();
             }
-
-            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            string date = Year + "-" + Month + "-" + Day;
+            DateTime actualDate = DateTime.Parse(date);
+            object[] key = new object[] { actualDate, CategoryId, GameId }; // only for composite key
             var answer = await _answerManager.ReadAsync(key, true, false);
             if (answer == null)
             {
@@ -103,11 +108,13 @@ namespace PresentationLayer
         // POST: Answers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost("{Date}/{CategoryId}/{GameId}")]
+        [HttpPost("[action]/{Year}/{Month}/{Day}/{CategoryId}/{GameId}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(DateTime? date, int? CategoryId, int? GameId, [Bind("Date,GameId,CategoryId,CategoryValueId")] Answer answer)
+        public async Task<IActionResult> Edit(int Year, int Month, int Day, int? CategoryId, int? GameId, [Bind("Date,GameId,CategoryId,CategoryValueId")] Answer answer)
         {
-            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            string date = Year + "-" + Month + "-" + Day;
+            DateTime actualDate = DateTime.Parse(date);
+            object[] key = new object[] { actualDate, CategoryId, GameId }; // only for composite key
 
             if (answer.Date != (DateTime)key[0] || answer.CategoryId != (int)key[1] || answer.GameId != (int)key[2])
             {
@@ -116,7 +123,7 @@ namespace PresentationLayer
 
             answer.CategoryValue = await _categoriesValuesManager.ReadAsync(answer.CategoryValueId); // add the navigational properties since you cannot bind them
 
-            if (ModelState.IsValid)
+            if (answer.CategoryValue != null)
             {
                 try
                 {
@@ -139,15 +146,16 @@ namespace PresentationLayer
         }
 
         // GET: Answers/Delete/5
-        [HttpGet("{Date}/del/{CategoryId}/{GameId}")]
-        public async Task<IActionResult> Delete(DateTime? date, int? CategoryId, int? GameId)
+        [HttpGet("[action]/{Year}/{Month}/{Day}/{CategoryId}/{GameId}")]
+        public async Task<IActionResult> Delete(int Year, int Month, int Day, int? CategoryId, int? GameId)
         {
-            if (date == null || CategoryId == null || GameId == null) // for composite 
+            if ( CategoryId == null || GameId == null) // for composite 
             {
                 return NotFound();
             }
-
-            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            string date = Year + "-" + Month + "-" + Day;
+            DateTime actualDate = DateTime.Parse(date);
+            object[] key = new object[] { actualDate, CategoryId, GameId }; // only for composite key
             var answer = await _answerManager.ReadAsync(key, true, false);
             if (answer == null)
             {
@@ -158,11 +166,13 @@ namespace PresentationLayer
         }
 
         // POST: Answers/Delete/5
-        [HttpPost("{Date}/{CategoryId}/{GameId}"), ActionName("Delete")]
+        [HttpPost("[action]/{Year}/{Month}/{Day}/{CategoryId}/{GameId}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(DateTime? date, int? CategoryId, int? GameId)
+        public async Task<IActionResult> DeleteConfirmed(int Year, int Month, int Day, int? CategoryId, int? GameId)
         {
-            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            string date = Year + "-" + Month + "-" + Day;
+            DateTime actualDate = DateTime.Parse(date);
+            object[] key = new object[] { actualDate, CategoryId, GameId }; // only for composite key
             await _answerManager.DeleteAsync(key);
             return RedirectToAction(nameof(Index));
         }
@@ -170,8 +180,8 @@ namespace PresentationLayer
         private async Task LoadNavigationalProperties()
         {
             ViewData["CategoryValueId"] = new SelectList(await _categoriesValuesManager.ReadAllAsync(), "Id", "Value");
-            ViewData["GameId"] = new SelectList(await _categoriesManager.ReadAllAsync(), "Id", "Name");
-            ViewData["CategoryId"] = new SelectList(await _gameManager.ReadAllAsync(), "Id", "Name");
+            ViewData["GameId"] = new SelectList(await _gameManager.ReadAllAsync(), "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(await _categoriesManager.ReadAllAsync(), "Id", "Name");
 
         }
 

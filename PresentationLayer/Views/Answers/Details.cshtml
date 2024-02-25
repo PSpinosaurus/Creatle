@@ -10,6 +10,24 @@
     <h4>Answer</h4>
     <hr />
     <dl class="row">
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Date)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Date)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.GameId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.GameId)
+        </dd>
+        <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.CategoryId)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.CategoryId)
+        </dd>
         <dt class = "col-sm-2">
             @Html.DisplayNameFor(model => model.CategoryValue)
         </dt>
@@ -19,6 +37,6 @@
     </dl>
 </div>
 <div>
-    @Html.ActionLink("Edit", "Edit", new { /* id = Model.PrimaryKey */ }) |
+    <a asp-action="Edit" asp-route-Year="model.Date.Year" asp-route-Month="model.Date.Month" asp-route-Day="model.Date.Day" asp-route-CategoryId="model.CategoryId" asp-route-GameId="model.GameId">Edit</a>
     <a asp-action="Index">Back to List</a>
 </div>
