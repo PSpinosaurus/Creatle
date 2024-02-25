@@ -7,36 +7,46 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessLayer;
 using DataLayer;
+using ServiceLayer;
+using System.ComponentModel;
 
 namespace PresentationLayer
 {
     public class AnswersController : Controller
     {
-        private readonly CreatleDbContext _context;
+        private readonly AnswerManager _answerManager; // you change this to use service layer
+        private readonly CategoriesValuesManager _categoriesValuesManager; // add this for the nav properties
+        private readonly CategoriesManager _categoriesManager;
+        private readonly GameManager _gameManager;
 
-        public AnswersController(CreatleDbContext context)
+        public AnswersController(AnswerManager manager, 
+                                 CategoriesValuesManager categoriesValuesManager, 
+                                 CategoriesManager categoriesManager, 
+                                 GameManager gameManager)  // dont forget add scoped
         {
-            _context = context;
+            _answerManager = manager;
+            _categoriesValuesManager = categoriesValuesManager;
+            _categoriesManager = categoriesManager;
+            _gameManager = gameManager;
         }
 
         // GET: Answers
         public async Task<IActionResult> Index()
         {
-            var creatleDbContext = _context.Answers.Include(a => a.CategoryValue);
-            return View(await creatleDbContext.ToListAsync());
+            return View(await _answerManager.ReadAllAsync(true)); // change here  go in the view and change the links at the bottom to use asp action 
         }
 
         // GET: Answers/Details/5
-        public async Task<IActionResult> Details(DateTime? id)
+        [HttpGet("{Date}/d/{CategoryId}/{GameId}")]
+        public async Task<IActionResult> Details(DateTime? date, int? CategoryId, int? GameId) // this is for composite pk 
         {
-            if (id == null || _context.Answers == null)
+            if (date == null || CategoryId == null || GameId == null)
             {
                 return NotFound();
             }
 
-            var answer = await _context.Answers
-                .Include(a => a.CategoryValue)
-                .FirstOrDefaultAsync(m => m.Date == id);
+            object[] key = new object[] {date, CategoryId, GameId}; // only for composite key
+            var answer = await _answerManager.ReadAsync(key); // change this here
             if (answer == null)
             {
                 return NotFound();
@@ -46,9 +56,9 @@ namespace PresentationLayer
         }
 
         // GET: Answers/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create() //dont forget to make methods async Task...
         {
-            ViewData["CategoryValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value");
+            await LoadNavigationalProperties(); // add this method
             return View();
         }
 
@@ -59,55 +69,62 @@ namespace PresentationLayer
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Date,GameId,CategoryId,CategoryValueId")] Answer answer)
         {
+            answer.CategoryValue = await _categoriesValuesManager.ReadAsync(answer.CategoryValueId); // add the navigational properties since you cannot bind them
+
             if (ModelState.IsValid)
             {
-                _context.Add(answer);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                await _answerManager.CreateAsync(answer); // change here
+                return RedirectToAction(nameof(Index)); 
             }
-            ViewData["CategoryValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value", answer.CategoryValueId);
+
+            await LoadNavigationalProperties();
             return View(answer);
         }
 
         // GET: Answers/Edit/5
-        public async Task<IActionResult> Edit(DateTime? id)
+        [HttpGet("{Date}/ed/{CategoryId}/{GameId}")]
+        public async Task<IActionResult> Edit(DateTime? date, int? CategoryId, int? GameId)
         {
-            if (id == null || _context.Answers == null)
+            if (date == null || CategoryId == null || GameId == null) // for composite 
             {
                 return NotFound();
             }
 
-            var answer = await _context.Answers.FindAsync(id);
+            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            var answer = await _answerManager.ReadAsync(key, true, false);
             if (answer == null)
             {
                 return NotFound();
             }
-            ViewData["CategoryValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value", answer.CategoryValueId);
+            await LoadNavigationalProperties();
             return View(answer);
         }
 
         // POST: Answers/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost("{Date}/{CategoryId}/{GameId}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(DateTime id, [Bind("Date,GameId,CategoryId,CategoryValueId")] Answer answer)
+        public async Task<IActionResult> Edit(DateTime? date, int? CategoryId, int? GameId, [Bind("Date,GameId,CategoryId,CategoryValueId")] Answer answer)
         {
-            if (id != answer.Date)
+            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+
+            if (answer.Date != (DateTime)key[0] || answer.CategoryId != (int)key[1] || answer.GameId != (int)key[2])
             {
                 return NotFound();
             }
+
+            answer.CategoryValue = await _categoriesValuesManager.ReadAsync(answer.CategoryValueId); // add the navigational properties since you cannot bind them
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    _context.Update(answer);
-                    await _context.SaveChangesAsync();
+                    await _answerManager.UpdateAsync(answer, true);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!AnswerExists(answer.Date))
+                    if (!await AnswerExists(key))
                     {
                         return NotFound();
                     }
@@ -118,21 +135,20 @@ namespace PresentationLayer
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["CategoryValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value", answer.CategoryValueId);
             return View(answer);
         }
 
         // GET: Answers/Delete/5
-        public async Task<IActionResult> Delete(DateTime? id)
+        [HttpGet("{Date}/del/{CategoryId}/{GameId}")]
+        public async Task<IActionResult> Delete(DateTime? date, int? CategoryId, int? GameId)
         {
-            if (id == null || _context.Answers == null)
+            if (date == null || CategoryId == null || GameId == null) // for composite 
             {
                 return NotFound();
             }
 
-            var answer = await _context.Answers
-                .Include(a => a.CategoryValue)
-                .FirstOrDefaultAsync(m => m.Date == id);
+            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            var answer = await _answerManager.ReadAsync(key, true, false);
             if (answer == null)
             {
                 return NotFound();
@@ -142,27 +158,26 @@ namespace PresentationLayer
         }
 
         // POST: Answers/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost("{Date}/{CategoryId}/{GameId}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(DateTime id)
+        public async Task<IActionResult> DeleteConfirmed(DateTime? date, int? CategoryId, int? GameId)
         {
-            if (_context.Answers == null)
-            {
-                return Problem("Entity set 'CreatleDbContext.Answers'  is null.");
-            }
-            var answer = await _context.Answers.FindAsync(id);
-            if (answer != null)
-            {
-                _context.Answers.Remove(answer);
-            }
-            
-            await _context.SaveChangesAsync();
+            object[] key = new object[] { date, CategoryId, GameId }; // only for composite key
+            await _answerManager.DeleteAsync(key);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool AnswerExists(DateTime id)
+        private async Task LoadNavigationalProperties()
         {
-          return (_context.Answers?.Any(e => e.Date == id)).GetValueOrDefault();
+            ViewData["CategoryValueId"] = new SelectList(await _categoriesValuesManager.ReadAllAsync(), "Id", "Value");
+            ViewData["GameId"] = new SelectList(await _categoriesManager.ReadAllAsync(), "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(await _gameManager.ReadAllAsync(), "Id", "Name");
+
+        }
+
+        private async Task<bool> AnswerExists(object[] key)
+        {
+            return await _answerManager.ReadAsync(key) != null;
         }
     }
 }
