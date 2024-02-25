@@ -4,20 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessLayer
 {
     public class HeroProfile
     {
-        public int GameId { get; set; }
+        public int GameId { get; set; } // FK to the HeroProfile list in Game 
 
-        public int CategoryId { get; set; }
+        public int CategoryId { get; set; } // FK to the HeroProfile list in categories 
 
-        public int HeroId { get; set; }
+        public int HeroId { get; set; } // gives the info for the hero - HeroMetadata
 
-        public int ValueId { get; set; }
+        public int ValueId { get; set; } // is here to account for the possibility of a hero having more than one values, like "top and mid"
+        
+        [ForeignKey("ValueId")]
+        public CategoriesValues Value { get; set; }
 
-        private HeroProfile()
+        public HeroProfile()
         {
                 
         }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer
 {
-    public class HeroProfileContext : IDb<HeroProfile, object>
+    public class HeroProfileContext : IDb<HeroProfile, object[]>
     {
         private readonly CreatleDbContext dbContext;
         public HeroProfileContext(CreatleDbContext dbContext)
@@ -20,6 +20,12 @@ namespace DataLayer
         {
             try
             {
+                CategoriesValues cvFromDb = await dbContext.CategoriesValues.FindAsync(item.ValueId);
+                if (cvFromDb != null)
+                {
+                    item.Value = cvFromDb;
+                }
+
                 dbContext.HeroProfiles.Add(item);
                 await dbContext.SaveChangesAsync();
             }
@@ -29,7 +35,7 @@ namespace DataLayer
             }
         }
 
-        public async Task DeleteAsync(object key)
+        public async Task DeleteAsync(object[] key)
         {
             try
             {
@@ -55,6 +61,11 @@ namespace DataLayer
             {
                 IQueryable<HeroProfile> query = dbContext.HeroProfiles;
 
+                if (useNavigationalProperties)
+                {
+                    query.Include(h => h.Value);
+                }
+
                 if (isReadOnly)
                 {
                     query = query.AsNoTrackingWithIdentityResolution();
@@ -68,18 +79,26 @@ namespace DataLayer
             }
         }
 
-        public async Task<HeroProfile> ReadAsync(object key, bool useNavigationalProperties = false, bool isReadOnly = true)
+        public async Task<HeroProfile> ReadAsync(object[] key, bool useNavigationalProperties = false, bool isReadOnly = true)
         {
             try
             {
                 IQueryable<HeroProfile> query = dbContext.HeroProfiles;
+
+                if (useNavigationalProperties)
+                {
+                    query.Include(h => h.Value);
+                }
 
                 if (isReadOnly)
                 {
                     query = query.AsNoTrackingWithIdentityResolution();
                 }
 
-                return await query.FirstOrDefaultAsync(h => new { h.GameId, h.CategoryId, h.HeroId, h.ValueId } == key);
+                return await query.FirstOrDefaultAsync(h => (h.ValueId == (int)key[0] && 
+                                                             h.GameId == (int)key[1] && 
+                                                             h.HeroId == (int)key[2] && 
+                                                             h.CategoryId == (int)key[3]));
             }
             catch (Exception)
             {
@@ -91,10 +110,22 @@ namespace DataLayer
         {
             try
             {
-                HeroProfile heroprofileFromDb = await ReadAsync(item.GameId, useNavigationalProperties, false);
+                object[] key = new object[] { item.ValueId, item.GameId, item.HeroId, item.CategoryId };
+                HeroProfile heroprofileFromDb = await ReadAsync(key, useNavigationalProperties, false);
 
-                dbContext.Entry(heroprofileFromDb).CurrentValues.SetValues(item);
-
+                if (useNavigationalProperties)
+                {
+                    CategoriesValues cvFromDb = await dbContext.CategoriesValues.FindAsync(item.ValueId);
+                    if (cvFromDb != null)
+                    {
+                        heroprofileFromDb.Value = cvFromDb;
+                    }
+                    else
+                    {
+                        heroprofileFromDb.Value = item.Value;
+                    }
+                }
+                    
                 await dbContext.SaveChangesAsync();
             }
             catch(Exception)

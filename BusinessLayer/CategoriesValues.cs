@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessLayer
 {
@@ -12,12 +13,18 @@ namespace BusinessLayer
         [Key]
         public int Id { get; set; }
 
-        public int CategoryId { get; set; }
-
         [Required]
-        public string Value { get; set; }
+        public string Value { get; set; } // for example male or female
 
-        private CategoriesValues()
+        [ForeignKey(nameof(Category))]
+        public int CategoryId { get; set; } // which category does it belong to
+        public Categories Category { get; set; }  // the category
+
+        public List<HeroProfile> HeroProfiles { get; set; } = new List<HeroProfile>();
+
+        public List<Answer> Answers { get; set; } = new List<Answer>();
+
+        public CategoriesValues()
         {
                 
         }

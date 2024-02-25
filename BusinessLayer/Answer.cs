@@ -4,18 +4,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessLayer
 {
     public class Answer
     {
-        public DateTime Date { get; set; }
+        public DateTime Date { get; set; } // when was this an answer
 
-        public int GameId { get; set; }
+        public int GameId { get; set; } // for which game
 
-        public int CategoryId { get; set; }
+        public int CategoryId { get; set; } // for which category
 
-        private Answer()
+        public int CategoryValueId { get; set; } // the id of the answer
+
+        [ForeignKey("CategoryValueId")]
+        public CategoriesValues CategoryValue { get; set; }
+
+        public Answer()
         {
               
         }

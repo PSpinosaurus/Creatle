@@ -27,7 +27,7 @@ namespace DataLayer
                     keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
                     Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
 
-                    if (answerFromDb is null)
+                    if (answerFromDb == null)
                     {
                         answers.Add(answer);
                     }
@@ -43,7 +43,7 @@ namespace DataLayer
                 {
                     CategoriesValues categoriesValuesFromDb = await dbContext.CategoriesValues.FindAsync(category.Id);
 
-                    if (categoriesValuesFromDb is null)
+                    if (categoriesValuesFromDb == null)
                     {
                         categoriesvalues.Add(category);
                     }
@@ -59,7 +59,7 @@ namespace DataLayer
                     keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
                     HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
                     
-                    if (heroProfileFromDb is null)
+                    if (heroProfileFromDb == null)
                     {
                         heroprofiles.Add(heroProfile);
                     }
@@ -90,7 +90,7 @@ namespace DataLayer
 
                 if (categoryFromDb == null)
                 {
-                    throw new ArgumentException("Author with that Id does not exist!");
+                    throw new ArgumentException("Category with that Id does not exist!");
                 }
 
                 dbContext.Categories.Remove(categoryFromDb);
@@ -162,7 +162,7 @@ namespace DataLayer
             {
                 Categories categoryFromDb = await ReadAsync(item.Id, useNavigationalProperties, false);
 
-                dbContext.Entry(categoryFromDb).CurrentValues.SetValues(item);
+                categoryFromDb.Name = item.Name;
 
                 if (useNavigationalProperties)
                 {

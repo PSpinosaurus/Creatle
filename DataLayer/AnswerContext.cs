@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DataLayer
 {
-    public class AnswerContext : IDb<Answer, object>
+    public class AnswerContext : IDb<Answer, object[]>
     {
         private readonly CreatleDbContext dbContext;
         public AnswerContext(CreatleDbContext dbContext)
@@ -21,6 +21,12 @@ namespace DataLayer
         {
             try
             {
+                CategoriesValues cvFromDb = await dbContext.CategoriesValues.FindAsync(item.CategoryValueId);
+                if (cvFromDb != null)
+                {
+                    item.CategoryValue = cvFromDb;
+                }
+
                 dbContext.Answers.Add(item);
                 await dbContext.SaveChangesAsync();
             }
@@ -30,7 +36,7 @@ namespace DataLayer
             }
         }
 
-        public async Task DeleteAsync(object key)
+        public async Task DeleteAsync(object[] key)
         {
             try
             {
@@ -56,6 +62,11 @@ namespace DataLayer
             {
                 IQueryable<Answer> query = dbContext.Answers;
 
+                if (useNavigationalProperties)
+                {
+                    query = query.Include(a => a.CategoryValue);
+                }
+
                 if (isReadOnly)
                 {
                     query = query.AsNoTrackingWithIdentityResolution();
@@ -69,18 +80,23 @@ namespace DataLayer
             }
         }
 
-        public async Task<Answer> ReadAsync(object key, bool useNavigationalProperties = false, bool isReadOnly = true)
+        public async Task<Answer> ReadAsync(object[] key, bool useNavigationalProperties = false, bool isReadOnly = true)
         {
             try
             {
                 IQueryable<Answer> query = dbContext.Answers;
+
+                if (useNavigationalProperties)
+                {
+                    query = query.Include(a => a.CategoryValue);
+                }
 
                 if (isReadOnly)
                 {
                     query = query.AsNoTrackingWithIdentityResolution();
                 }
 
-                return await query.FirstOrDefaultAsync(a => new { a.Date, a.GameId, a.CategoryId } == key);
+                return await query.FirstOrDefaultAsync(a => (a.Date == (DateTime)key[0] && a.CategoryId == (int)key[1] && a.GameId == (int)key[2]));
             }
             catch(Exception)
             {
@@ -92,8 +108,23 @@ namespace DataLayer
         {
             try
             {
-                Answer answerFromDb = await ReadAsync(item.GameId, false, false);
-                dbContext.Entry(answerFromDb).CurrentValues.SetValues(item);
+                object[] key = new object[]{item.Date, item.CategoryId,  item.GameId};
+                Answer answerFromDb = await ReadAsync(key, false, false);
+                answerFromDb.CategoryValueId = item.CategoryValueId;
+
+                if (useNavigationalProperties)
+                {
+                    CategoriesValues cvFromDb = await dbContext.CategoriesValues.FindAsync(item.CategoryValueId);
+                    if (cvFromDb != null)
+                    {
+                        answerFromDb.CategoryValue = cvFromDb;
+                    }
+                    else
+                    {
+                        answerFromDb.CategoryValue = item.CategoryValue;
+                    }
+                }
+
                 await dbContext.SaveChangesAsync();
             }
             catch(Exception)

@@ -19,44 +19,7 @@ namespace DataLayer
         public async Task CreateAsync(Game item)
         {
             try
-            {
-                object[] keys = new object[4];
-                List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroesProfiles.Count);
-
-                foreach (HeroProfile heroProfile in item.HeroesProfiles)
-                {
-                    keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
-                    HeroProfile heroprofileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
-
-                    if (heroprofileFromDb is null)
-                    {
-                        heroprofiles.Add(heroProfile);
-                    }
-                    else
-                    {
-                        heroprofiles.Add(heroprofileFromDb);
-                    }
-                }
-
-                List<Answer> answers = new List<Answer>(item.Answers.Count);
-
-                foreach (Answer answer in item.Answers)
-                {
-                    keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
-                    Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
-                    if (answerFromDb is null)
-                    {
-                        answers.Add(answer);
-                    }
-                    else
-                    {
-                        answers.Add(answerFromDb);
-                    }
-                }
-
-                item.HeroesProfiles = heroprofiles;
-                item.Answers = answers;
-
+            {               
                 dbContext.Games.Add(item);
                 await dbContext.SaveChangesAsync();
             }
@@ -144,7 +107,9 @@ namespace DataLayer
             {
                 Game gameFromDb = await ReadAsync(item.Id, useNavigationalProperties, false);
 
-                dbContext.Entry(gameFromDb).CurrentValues.SetValues(item);
+                gameFromDb.Description = item.Description;
+                gameFromDb.Name = item.Name;
+                gameFromDb.Colour = item.Colour;
 
                 if (useNavigationalProperties)
                 {
