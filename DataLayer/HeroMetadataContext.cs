@@ -124,7 +124,8 @@ namespace DataLayer
             {
                 HeroMetadata herometadataFromDb = await ReadAsync(item.Id, useNavigationalProperties, false);
 
-                dbContext.Entry(herometadataFromDb).CurrentValues.SetValues(item);
+                herometadataFromDb.Name = item.Name;
+                herometadataFromDb.Avatar = item.Avatar;
 
                 if (useNavigationalProperties)
                 {

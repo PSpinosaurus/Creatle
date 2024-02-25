@@ -28,6 +28,9 @@ namespace DataLayer
         {
             modelBuilder.Entity<Answer>().HasKey(x => new { x.Date, x.CategoryId, x.GameId });
             modelBuilder.Entity<HeroProfile>().HasKey(x => new { x.ValueId, x.GameId, x.HeroId, x.CategoryId });
+            modelBuilder.Entity<Categories>().HasMany(c => c.CategoriesValues).WithOne(cv => cv.Category);
+            modelBuilder.Entity<CategoriesValues>().HasMany(cv => cv.HeroProfiles).WithOne(hp => hp.Value).OnDelete(DeleteBehavior.NoAction);
+            modelBuilder.Entity<CategoriesValues>().HasMany(cv => cv.Answers).WithOne(a => a.CategoryValue).OnDelete(DeleteBehavior.NoAction);
             base.OnModelCreating(modelBuilder);
         }
 

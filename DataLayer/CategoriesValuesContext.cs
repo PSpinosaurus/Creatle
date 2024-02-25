@@ -20,6 +20,48 @@ namespace DataLayer
         {
             try
             {
+                List<Answer> answers = new List<Answer>(item.Answers.Count);
+                object[] keys = new object[3];
+                foreach (Answer answer in item.Answers)
+                {
+                    keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
+                    Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
+
+                    if (answerFromDb == null)
+                    {
+                        answers.Add(answer);
+                    }
+                    else
+                    {
+                        answers.Add(answerFromDb);
+                    }
+                }
+
+                List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
+                foreach (HeroProfile heroProfile in item.HeroProfiles)
+                {
+                    keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                    HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
+
+                    if (heroProfileFromDb == null)
+                    {
+                        heroprofiles.Add(heroProfile);
+                    }
+                    else
+                    {
+                        heroprofiles.Add(heroProfileFromDb);
+                    }
+                }
+
+                Categories categoryFromDb = await dbContext.Categories.FindAsync(item.CategoryId);
+                if (categoryFromDb != null)
+                {
+                    item.Category = categoryFromDb;
+                }
+
+                item.HeroProfiles = heroprofiles;
+                item.Answers = answers;
+
                 dbContext.CategoriesValues.Add(item);
                 await dbContext.SaveChangesAsync();
             }
@@ -55,6 +97,13 @@ namespace DataLayer
             {
                 IQueryable<CategoriesValues> query = dbContext.CategoriesValues;
 
+                if (useNavigationalProperties)
+                {
+                    query.Include(cv => cv.Category)
+                         .Include(cv => cv.HeroProfiles)
+                         .Include(cv => cv.Answers);
+                }
+
                 if (isReadOnly)
                 {
                     query = query.AsNoTrackingWithIdentityResolution();
@@ -73,6 +122,12 @@ namespace DataLayer
             try
             {
                 IQueryable<CategoriesValues> query = dbContext.CategoriesValues;
+                if (useNavigationalProperties)
+                {
+                    query.Include(cv => cv.Category)
+                         .Include(cv => cv.HeroProfiles)
+                         .Include(cv => cv.Answers);
+                }
 
                 if (isReadOnly)
                 {
@@ -93,8 +148,56 @@ namespace DataLayer
             {
                 CategoriesValues categoriesvaluesFromDb = await ReadAsync(item.Id, false, false);
 
-                dbContext.Entry(categoriesvaluesFromDb).CurrentValues.SetValues(item);
+                categoriesvaluesFromDb.Value = item.Value;
 
+                if (useNavigationalProperties)
+                {
+                    List<Answer> answers = new List<Answer>(item.Answers.Count);
+                    object[] keys = new object[3];
+                    foreach (Answer answer in item.Answers)
+                    {
+                        keys = new object[] { answer.Date, answer.CategoryId, answer.GameId };
+                        Answer answerFromDb = await dbContext.Answers.FindAsync(keys);
+
+                        if (answerFromDb == null)
+                        {
+                            answers.Add(answer);
+                        }
+                        else
+                        {
+                            answers.Add(answerFromDb);
+                        }
+                    }
+
+                    List<HeroProfile> heroprofiles = new List<HeroProfile>(item.HeroProfiles.Count);
+                    foreach (HeroProfile heroProfile in item.HeroProfiles)
+                    {
+                        keys = new object[] { heroProfile.ValueId, heroProfile.GameId, heroProfile.HeroId, heroProfile.CategoryId };
+                        HeroProfile heroProfileFromDb = await dbContext.HeroProfiles.FindAsync(keys);
+
+                        if (heroProfileFromDb == null)
+                        {
+                            heroprofiles.Add(heroProfile);
+                        }
+                        else
+                        {
+                            heroprofiles.Add(heroProfileFromDb);
+                        }
+                    }
+
+                    Categories categoryFromDb = await dbContext.Categories.FindAsync(item.CategoryId);
+                    if (categoryFromDb != null)
+                    {
+                        categoriesvaluesFromDb.Category = categoryFromDb;
+                    }
+                    else
+                    {
+                        categoriesvaluesFromDb.Category = item.Category;
+                    }
+
+                    categoriesvaluesFromDb.HeroProfiles = heroprofiles;
+                    categoriesvaluesFromDb.Answers = answers;
+                }
                 await dbContext.SaveChangesAsync();
             }
             catch(Exception)

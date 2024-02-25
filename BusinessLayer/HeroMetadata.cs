@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BusinessLayer
 {
@@ -13,13 +14,14 @@ namespace BusinessLayer
         public int Id { get; set; }
 
         [Required]
-        public string Name { get; set; }
+        public string Name { get; set; } // Ashe, Braum (the name of the champ)
 
-        public string Avatar { get; set; }
+        public string Avatar { get; set; } // the small icon that appears 
 
-        public List<HeroProfile> HeroProfiles { get; set; }
+        [ForeignKey("HeroId")]
+        public List<HeroProfile> HeroProfiles { get; set; } // beacause the champ can appear in many games/categories and can have several values
 
-        private HeroMetadata()
+        public HeroMetadata()
         {
 
         }
