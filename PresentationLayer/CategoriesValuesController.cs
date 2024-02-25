@@ -163,7 +163,7 @@ namespace PresentationLayer
 
         private async Task LoadNavigationalProperties()
         {
-            ViewData["Category"] = new SelectList(await _categoriesManager.ReadAllAsync());
+            ViewData["Category"] = new SelectList(await _categoriesManager.ReadAllAsync(), "Id", "Name");
             ViewData["HeroProfiles"] = new SelectList(await _heroProfileManager.ReadAllAsync());
             ViewData["Answers"] = new SelectList(await _answerManager.ReadAllAsync());
         }
