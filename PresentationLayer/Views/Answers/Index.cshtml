@@ -25,9 +25,9 @@
                 @Html.DisplayFor(modelItem => item.CategoryValue.Value)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.Date/ed/@item.CategoryId/@item.GameId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Date/det/@item.CategoryId/@item.GameId/d">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Date/del/@item.CategoryId/@item.GameId">Delete</a> |
+                    <a asp-action="Edit" asp-route-Year="@item.Date.Year" asp-route-Month="@item.Date.Month" asp-route-Day="@item.Date.Day" asp-route-CategoryId="@item.CategoryId" asp-route-GameId="@item.GameId">Edit</a> |
+                    <a asp-action="Details" asp-route-Year="@item.Date.Year" asp-route-Month="@item.Date.Month" asp-route-Day="@item.Date.Day" asp-route-CategoryId="@item.CategoryId" asp-route-GameId="@item.GameId">Details</a> |
+                    <a asp-action="Delete" asp-route-Year="@item.Date.Year" asp-route-Month="@item.Date.Month" asp-route-Day="@item.Date.Day" asp-route-CategoryId="@item.CategoryId" asp-route-GameId="@item.GameId">Delete</a> |
             </td>
         </tr>
 }

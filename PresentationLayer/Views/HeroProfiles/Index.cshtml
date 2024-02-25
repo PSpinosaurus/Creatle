@@ -13,22 +13,37 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Value)
+                @Html.DisplayNameFor(model => model.ValueId)
             </th>
-            <th></th>
+            <th>
+                @Html.DisplayNameFor(model => model.HeroId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GameId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.CategoryId)
+            </th>
+            <th> </th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.Value.Value)
+                @Html.DisplayFor(modelItem => item.ValueId)
             </td>
+                <td> @Html.DisplayFor(modelItem => item.HeroId)</td>
             <td>
-                @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-            </td>
+               <td>
+                        @Html.DisplayFor(modelItem => item.GameId)
+               </td>
+                <td> @Html.DisplayFor(modelItem => item.CategoryId)</td>
+                <td>
+                    <a asp-action="Edit" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Edit</a> |
+                    <a asp-action="Details" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Details</a> |
+                    <a asp-action="Delete" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Delete</a> |
+                </td>
         </tr>
 }
     </tbody>

@@ -7,36 +7,50 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessLayer;
 using DataLayer;
+using ServiceLayer;
+using System.ComponentModel;
 
 namespace PresentationLayer
 {
     public class HeroProfilesController : Controller
     {
-        private readonly CreatleDbContext _context;
+        private readonly HeroProfileManager _manager;
+        private readonly CategoriesValuesManager _categoriesValuesManager; // add this for the nav properties
+        private readonly CategoriesManager _categoriesManager;
+        private readonly GameManager _gameManager;
+        private readonly HeroMetadataManager _heroMetadataManager;
 
-        public HeroProfilesController(CreatleDbContext context)
+        public HeroProfilesController(HeroProfileManager manager, 
+            CategoriesValuesManager categoriesValuesManager, 
+            CategoriesManager categoriesManager,
+            GameManager gameManager, 
+            HeroMetadataManager heroMetadataManager)
         {
-            _context = context;
+            _manager = manager;
+            _categoriesValuesManager = categoriesValuesManager;
+            _categoriesManager = categoriesManager;
+            _gameManager = gameManager;
+            _heroMetadataManager = heroMetadataManager;
         }
 
         // GET: HeroProfiles
         public async Task<IActionResult> Index()
         {
-            var creatleDbContext = _context.HeroProfiles.Include(h => h.Value);
-            return View(await creatleDbContext.ToListAsync());
+            await LoadNavigationalProperties();
+            return View(await _manager.ReadAllAsync(true));
         }
 
         // GET: HeroProfiles/Details/5
-        public async Task<IActionResult> Details(int? id)
+        [HttpGet("[action]/{ValueId}/{GameId}/{HeroId}/{CategoryId}")]
+        public async Task<IActionResult> Details(int ValueId, int GameId, int HeroId, int CategoryId)
         {
-            if (id == null || _context.HeroProfiles == null)
+            if (ValueId == null || GameId == null || HeroId == null || CategoryId == null)
             {
                 return NotFound();
             }
-
-            var heroProfile = await _context.HeroProfiles
-                .Include(h => h.Value)
-                .FirstOrDefaultAsync(m => m.ValueId == id);
+            await LoadNavigationalProperties();
+            object[] key = new object[] { ValueId, GameId, HeroId, CategoryId }; // only for composite key
+            var heroProfile = await _manager.ReadAsync(key, true); // change this here
             if (heroProfile == null)
             {
                 return NotFound();
@@ -46,9 +60,9 @@ namespace PresentationLayer
         }
 
         // GET: HeroProfiles/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["ValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value");
+            await LoadNavigationalProperties();
             return View();
         }
 
@@ -59,55 +73,60 @@ namespace PresentationLayer
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("GameId,CategoryId,HeroId,ValueId")] HeroProfile heroProfile)
         {
-            if (ModelState.IsValid)
+            heroProfile.Value = await _categoriesValuesManager.ReadAsync(heroProfile.ValueId); // add the navigational properties since you cannot bind them
+
+            if (heroProfile.Value != null)
             {
-                _context.Add(heroProfile);
-                await _context.SaveChangesAsync();
+                await _manager.CreateAsync(heroProfile);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value", heroProfile.ValueId);
+            await LoadNavigationalProperties();
             return View(heroProfile);
         }
 
         // GET: HeroProfiles/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet("[action]/{ValueId}/{GameId}/{HeroId}/{CategoryId}")]
+        public async Task<IActionResult> Edit(int ValueId, int GameId, int HeroId, int CategoryId)
         {
-            if (id == null || _context.HeroProfiles == null)
+            if (ValueId == null || GameId == null || HeroId == null || CategoryId == null)
             {
                 return NotFound();
             }
 
-            var heroProfile = await _context.HeroProfiles.FindAsync(id);
+            object[] key = new object[] { ValueId, GameId, HeroId, CategoryId }; // only for composite key
+            var heroProfile = await _manager.ReadAsync(key, true); // change this here
             if (heroProfile == null)
             {
                 return NotFound();
             }
-            ViewData["ValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value", heroProfile.ValueId);
+            await LoadNavigationalProperties();
             return View(heroProfile);
         }
 
         // POST: HeroProfiles/Edit/5
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost("[action]/{ValueId}/{GameId}/{HeroId}/{CategoryId}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("GameId,CategoryId,HeroId,ValueId")] HeroProfile heroProfile)
+        public async Task<IActionResult> Edit(int ValueId, int GameId, int HeroId, int CategoryId, [Bind("GameId,CategoryId,HeroId,ValueId")] HeroProfile heroProfile)
         {
-            if (id != heroProfile.ValueId)
+            object[] key = new object[] { ValueId, GameId, HeroId, CategoryId }; // only for composite key
+
+            if (ValueId != heroProfile.ValueId || GameId != heroProfile.GameId || HeroId != heroProfile.HeroId || CategoryId != heroProfile.CategoryId)
             {
                 return NotFound();
             }
+            heroProfile.Value = await _categoriesValuesManager.ReadAsync(heroProfile.ValueId); // add the navigational properties since you cannot bind them
 
-            if (ModelState.IsValid)
+            if (heroProfile.Value != null)
             {
                 try
                 {
-                    _context.Update(heroProfile);
-                    await _context.SaveChangesAsync();
+                    await _manager.UpdateAsync(heroProfile, true);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!HeroProfileExists(heroProfile.ValueId))
+                    if (! await HeroProfileExists(key))
                     {
                         return NotFound();
                     }
@@ -118,21 +137,20 @@ namespace PresentationLayer
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["ValueId"] = new SelectList(_context.CategoriesValues, "Id", "Value", heroProfile.ValueId);
             return View(heroProfile);
         }
 
         // GET: HeroProfiles/Delete/5
-        public async Task<IActionResult> Delete(int? id)
+        [HttpGet("[action]/{ValueId}/{GameId}/{HeroId}/{CategoryId}")]
+        public async Task<IActionResult> Delete(int ValueId, int GameId, int HeroId, int CategoryId)
         {
-            if (id == null || _context.HeroProfiles == null)
+            if (ValueId == null || GameId == null || HeroId == null || CategoryId == null)
             {
                 return NotFound();
             }
 
-            var heroProfile = await _context.HeroProfiles
-                .Include(h => h.Value)
-                .FirstOrDefaultAsync(m => m.ValueId == id);
+            object[] key = new object[] { ValueId, GameId, HeroId, CategoryId }; // only for composite key
+            var heroProfile = await _manager.ReadAsync(key, true); // change this here
             if (heroProfile == null)
             {
                 return NotFound();
@@ -142,27 +160,27 @@ namespace PresentationLayer
         }
 
         // POST: HeroProfiles/Delete/5
-        [HttpPost, ActionName("Delete")]
+        [HttpPost("[action]/{ValueId}/{GameId}/{HeroId}/{CategoryId}"), ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> DeleteConfirmed(int ValueId, int GameId, int HeroId, int CategoryId)
         {
-            if (_context.HeroProfiles == null)
-            {
-                return Problem("Entity set 'CreatleDbContext.HeroProfiles'  is null.");
-            }
-            var heroProfile = await _context.HeroProfiles.FindAsync(id);
-            if (heroProfile != null)
-            {
-                _context.HeroProfiles.Remove(heroProfile);
-            }
-            
-            await _context.SaveChangesAsync();
+            object[] key = new object[] { ValueId, GameId, HeroId, CategoryId };
+            await _manager.DeleteAsync(key);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool HeroProfileExists(int id)
+        private async Task<bool> HeroProfileExists(object[] key)
         {
-          return (_context.HeroProfiles?.Any(e => e.ValueId == id)).GetValueOrDefault();
+            return await _manager.ReadAsync(key) != null;
+        }
+
+        private async Task LoadNavigationalProperties()
+        {
+            ViewData["CategoryValueId"] = new SelectList(await _categoriesValuesManager.ReadAllAsync(), "Id", "Value");
+            ViewData["GameId"] = new SelectList(await _gameManager.ReadAllAsync(), "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(await _categoriesManager.ReadAllAsync(), "Id", "Name");
+            ViewData["HeroMetadataId"] = new SelectList(await _heroMetadataManager.ReadAllAsync(), "Id", "Name");
+
         }
     }
 }

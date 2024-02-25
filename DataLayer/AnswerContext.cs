@@ -21,6 +21,8 @@ namespace DataLayer
         {
             try
             {
+                string date = item.Date.Year + '-' + item.Date.Month + "-" + item.Date.Day;
+                item.Date = DateTime.Parse(date);
                 CategoriesValues cvFromDb = await dbContext.CategoriesValues.FindAsync(item.CategoryValueId);
                 if (cvFromDb != null)
                 {
@@ -109,7 +111,7 @@ namespace DataLayer
             try
             {
                 object[] key = new object[]{item.Date, item.CategoryId,  item.GameId};
-                Answer answerFromDb = await ReadAsync(key, false, false);
+                Answer answerFromDb = await ReadAsync(key, useNavigationalProperties, false);
                 answerFromDb.CategoryValueId = item.CategoryValueId;
 
                 if (useNavigationalProperties)
