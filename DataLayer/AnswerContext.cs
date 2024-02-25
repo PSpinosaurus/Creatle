@@ -21,7 +21,7 @@ namespace DataLayer
         {
             try
             {
-                string date = item.Date.Year + '-' + item.Date.Month + "-" + item.Date.Day;
+                string date = item.Date.Year + "-" + item.Date.Month + "-" + item.Date.Day;
                 item.Date = DateTime.Parse(date);
                 CategoriesValues cvFromDb = await dbContext.CategoriesValues.FindAsync(item.CategoryValueId);
                 if (cvFromDb != null)

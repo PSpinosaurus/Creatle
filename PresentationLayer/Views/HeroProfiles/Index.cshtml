@@ -33,17 +33,19 @@
             <td>
                 @Html.DisplayFor(modelItem => item.ValueId)
             </td>
-                <td> @Html.DisplayFor(modelItem => item.HeroId)</td>
-            <td>
-               <td>
-                        @Html.DisplayFor(modelItem => item.GameId)
-               </td>
-                <td> @Html.DisplayFor(modelItem => item.CategoryId)</td>
-                <td>
-                    <a asp-action="Edit" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Edit</a> |
-                    <a asp-action="Details" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Details</a> |
-                    <a asp-action="Delete" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Delete</a> |
-                </td>
+            <td> 
+                 @Html.DisplayFor(modelItem => item.HeroId)</td>
+           <td>
+                @Html.DisplayFor(modelItem => item.GameId)
+           </td>
+           <td>
+                @Html.DisplayFor(modelItem => item.CategoryId)
+           </td>
+           <td>
+                <a asp-action="Edit" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Edit</a> |
+                <a asp-action="Details" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Details</a> |
+                <a asp-action="Delete" asp-route-ValueId="@item.ValueId" asp-route-GameId="@item.GameId" asp-route-HeroId="@item.HeroId" asp-route-CategoryId="@item.CategoryId">Delete</a> |
+           </td>
         </tr>
 }
     </tbody>

@@ -46,7 +46,7 @@ namespace PresentationLayer
             {
                 return NotFound();
             }
-
+            await LoadNavigationalProperties();
             return View(answer);
         }
 
@@ -66,7 +66,7 @@ namespace PresentationLayer
         {
             categoriesValues.Category = await _categoriesManager.ReadAsync(categoriesValues.CategoryId);
 
-            if (ModelState.IsValid)
+            if (categoriesValues.Category != null)
             {
                 await _categoriesValuesManager.CreateAsync(categoriesValues);
                 return RedirectToAction(nameof(Index));
@@ -105,8 +105,8 @@ namespace PresentationLayer
             {
                 return NotFound();
             }
-
-            if (ModelState.IsValid)
+            categoriesValues.Category = await _categoriesManager.ReadAsync(categoriesValues.CategoryId);
+            if (categoriesValues.Category != null)
             {
                 try
                 {
@@ -164,8 +164,8 @@ namespace PresentationLayer
         private async Task LoadNavigationalProperties()
         {
             ViewData["Category"] = new SelectList(await _categoriesManager.ReadAllAsync(), "Id", "Name");
-            ViewData["HeroProfiles"] = new SelectList(await _heroProfileManager.ReadAllAsync());
-            ViewData["Answers"] = new SelectList(await _answerManager.ReadAllAsync());
+            ViewData["HeroProfiles"] = new SelectList(await _heroProfileManager.ReadAllAsync(), "HeroId", "Hero");
+            ViewData["Answers"] = new SelectList(await _answerManager.ReadAllAsync(), "GameId", "Game");
         }
     }
 }
