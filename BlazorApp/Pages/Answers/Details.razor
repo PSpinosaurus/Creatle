@@ -1,0 +1,76 @@
+﻿@page "/answer/details/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}"
+@using BusinessLayer;
+@using ServiceLayer;
+@inject AnswerManager answerManager;
+
+<h3>Details</h3>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                GameId
+            </th>
+            <th>
+                CategoryId
+            </th>
+            <th>
+                CategoryValue
+            </th>
+            <th>
+                Date
+            </th>
+
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+                @model.GameId
+            </td>
+            <td>
+                @model.CategoryId
+            </td>
+            <td>
+                @model.CategoryValue
+            </td>
+            <td>
+                @model.Date
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<div>
+    <a href="brand/index">Back to List</a>
+</div>
+
+@code
+{
+    private Answer model = new();
+
+    [Parameter]
+    public int GameId { get; set; }
+
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    [Parameter]
+    public int Year { get; set; }
+
+    [Parameter]
+    public int Month { get; set; }
+
+    [Parameter]
+    public int Day { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        string date = Year + "-" + Month + "-" + Day;
+        DateTime actualDate = DateTime.Parse(date);
+        object[] key = new object[] { model.Date, model.CategoryId, model.GameId };
+        model = await answerManager.ReadAsync(key, true);
+        await base.OnInitializedAsync();
+    }
+
+}
