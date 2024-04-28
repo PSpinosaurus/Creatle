@@ -1,0 +1,45 @@
+﻿@page "/game/details/{Id:int}"
+@inject ServiceLayer.GameManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Game</h4>
+    <hr />
+    @if (game is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dd class="col-sm-10">@game</dd>
+        </dl>
+        <div>
+            <a href="@($"/game/edit?Name={game.Name}/Description={game.Description}/Colour={game.Colour}/HeroProfiles={game.HeroesProfiles}")">Edit</a> |
+            <a href="@($"/game/index")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Game? game;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        game = await DB.ReadAsync(Id);
+
+        if (game is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

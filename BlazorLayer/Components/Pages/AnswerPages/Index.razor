@@ -1,4 +1,4 @@
-﻿@page "/brand/index"
+﻿@page "/answer/index"
 @using BusinessLayer;
 @using ServiceLayer;
 @inject ServiceLayer.AnswerManager am;
@@ -23,9 +23,9 @@
                     @answer.CategoryValue.Value
                 </td>
                 <td>
-                    <a href="brand/update/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}/{CategoryValueId:int}">Edit</a> |
-                    <a href="brand/details/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}">Details</a> |
-                    <a href="brand/delete/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}">Delete</a>
+                    <a href="answer/update/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}/{CategoryValueId:int}">Edit</a> |
+                    <a href="answer/details/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}">Details</a> |
+                    <a href="answer/delete/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}">Delete</a>
                 </td>
             </tr>
         }

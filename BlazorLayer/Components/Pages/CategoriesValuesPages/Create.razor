@@ -1,0 +1,41 @@
+﻿@page "/categoriesvalues/create"
+@inject ServiceLayer.CategoriesValuesManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>CategoriesValues</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="categoriesValues" OnValidSubmit="AddCategoriesValues" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="id" class="form-label">Id:</label>
+                <InputNumber id="id" @bind-Value="categoriesValues.Id" class="form-control" />
+                <ValidationMessage For="() => categoriesValues.Id" class="text0danger" />
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/categoriesvalues">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public CategoriesValues categoriesValues { get; set; } = new();
+
+    public async Task AddCategoriesValues()
+    {
+        DB.CreateAsync(categoriesValues);
+        NavigationManager.NavigateTo("/categoriesvalues");
+    }
+}
