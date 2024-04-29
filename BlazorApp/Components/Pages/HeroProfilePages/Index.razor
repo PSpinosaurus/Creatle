@@ -1,0 +1,46 @@
+﻿@page "/heroprofile/index"
+@using BusinessLayer;
+@using ServiceLayer;
+@inject ServiceLayer.HeroProfileManager hpm;
+
+<h3>Index</h3>
+<a href="heroprofile/create">Create</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (HeroProfile heroProfile in model)
+        {
+            <tr>
+                <td>
+                    Game: @heroProfile.GameId | Hero: @heroProfile.HeroId | Category: @heroProfile.CategoryId | Value: @heroProfile.ValueId |
+                </td>
+                <td>
+                    <a href="heroprofile/details/@heroProfile.GameId/@heroProfile.CategoryId/@heroProfile.HeroId/@heroProfile.ValueId">Details</a> |
+                    <a href="heroprofile/delete/@heroProfile.GameId/@heroProfile.CategoryId/@heroProfile.HeroId/@heroProfile.ValueId">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    private IEnumerable<HeroProfile> model = new List<HeroProfile>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await hpm.ReadAllAsync(true);
+
+        await base.OnInitializedAsync();
+    }
+
+
+}

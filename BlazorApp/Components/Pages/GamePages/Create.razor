@@ -1,0 +1,53 @@
+﻿@page "/game/create"
+@inject ServiceLayer.GameManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>Game</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Game" OnValidSubmit="AddGame" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <label for="Name" class="col-10">Name</label>
+            <div>
+                <InputText id="Name" @bind-Value="@Game.Name" class="col-10">
+                </InputText>
+            </div>
+            <label for="Description" class="col-10">Description</label>
+            <div>
+                <InputText id="Description" @bind-Value="@Game.Description" class="col-10">
+                </InputText>
+            </div>
+            <label for="colour" class="col-10">Colour</label>
+            <div>
+                <InputNumber id="colour" @bind-Value="@Game.Colour" class="col-10">
+                </InputNumber>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/games/index">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public Game Game { get; set; } = new();
+
+    public async Task AddGame()
+    {
+        await DB.CreateAsync(Game);
+        NavigationManager.NavigateTo("/game/index");
+    }
+}

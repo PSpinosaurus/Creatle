@@ -1,0 +1,61 @@
+﻿@page "/categoriesvalues/create"
+@inject ServiceLayer.CategoriesValuesManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@inject ServiceLayer.CategoriesManager cm
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>CategoriesValues</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="categoriesValues" OnValidSubmit="AddCategoriesValues" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <label for="category" class="col-10">Category</label>
+            <div>
+                <InputSelect id="category" @bind-Value="categoriesValues.CategoryId" class="col-10">
+                    @foreach (Categories cat in c)
+                    {
+                        <option value="@cat.Id">@cat.Name</option>
+                    }
+                </InputSelect>
+            </div>
+            <label for="value" class="col-10">Value</label>
+            <div>
+                <InputText id="category" @bind-Value="categoriesValues.Value" class="col-10">
+                </InputText>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/categoriesvalues/index">Back to List</a>
+</div>
+
+@code {
+    List<Categories> c = new List<Categories>();
+
+    [SupplyParameterFromForm]
+    public CategoriesValues categoriesValues { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        c = (await cm.ReadAllAsync(true)).ToList();
+
+        base.OnInitializedAsync();
+    }
+
+    public async Task AddCategoriesValues()
+    {
+        DB.CreateAsync(categoriesValues);
+        NavigationManager.NavigateTo("/categoriesvalues/index");
+    }
+}

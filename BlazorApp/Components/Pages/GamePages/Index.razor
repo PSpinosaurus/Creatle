@@ -1,0 +1,46 @@
+﻿@page "/games/index"
+@using BusinessLayer;
+@using ServiceLayer;
+@inject ServiceLayer.GameManager hmm;
+
+<h3>Index</h3>
+<a href="game/create">Create</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Game game in model)
+        {
+            <tr>
+                <td>
+                    @game.Name
+                </td>
+                <td>
+                    <a href="game/details/@game.Id">Details</a> |
+                    <a href="game/delete/@game.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    private IEnumerable<Game> model = new List<Game>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await hmm.ReadAllAsync(true);
+
+        await base.OnInitializedAsync();
+    }
+
+
+}

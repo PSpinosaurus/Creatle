@@ -63,7 +63,7 @@ namespace DataLayer
 
                 if (useNavigationalProperties)
                 {
-                    query.Include(h => h.Value);
+                    query = query.Include(h => h.Value);
                 }
 
                 if (isReadOnly)
@@ -87,7 +87,7 @@ namespace DataLayer
 
                 if (useNavigationalProperties)
                 {
-                    query.Include(h => h.Value);
+                    query = query.Include(h => h.Value);
                 }
 
                 if (isReadOnly)

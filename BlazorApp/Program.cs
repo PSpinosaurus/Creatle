@@ -1,7 +1,6 @@
-using BlazorApp.Data;
+using BlazorApp.Components;
 using DataLayer;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Identity;
 using ServiceLayer;
 
 namespace BlazorApp
@@ -13,8 +12,8 @@ namespace BlazorApp
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddRazorPages();
-            builder.Services.AddServerSideBlazor();
+            builder.Services.AddRazorComponents()
+                .AddInteractiveServerComponents();
 
             builder.Services.AddScoped<CreatleDbContext, CreatleDbContext>();
 
@@ -30,6 +29,10 @@ namespace BlazorApp
             builder.Services.AddScoped<HeroMetadataManager, HeroMetadataManager>();
             builder.Services.AddScoped<HeroProfileContext, HeroProfileContext>();
             builder.Services.AddScoped<HeroProfileManager, HeroProfileManager>();
+
+            builder.Services.AddRazorPages();
+            builder.Services.AddServerSideBlazor();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -43,11 +46,10 @@ namespace BlazorApp
             app.UseHttpsRedirection();
 
             app.UseStaticFiles();
+            app.UseAntiforgery();
 
-            app.UseRouting();
-
-            app.MapBlazorHub();
-            app.MapFallbackToPage("/_Host");
+            app.MapRazorComponents<App>()
+                .AddInteractiveServerRenderMode();
 
             app.Run();
         }

@@ -1,0 +1,63 @@
+﻿@page "/categoriesvalues/details/{Id:int}"
+@inject ServiceLayer.CategoriesValuesManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>CategoriesValues</h4>
+    <hr />
+    @if (categoriesValues is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-10">Value</dt>
+            <dd class="col-sm-10">@categoriesValues.Value</dd>
+
+            <dt class="col-sm-10">Category</dt>
+            <dd class="col-sm-10">@categoriesValues.Category.Name</dd>
+
+            <dt class="col-sm-10">CategoryId</dt>
+            <dd class="col-sm-10">@categoriesValues.CategoryId</dd>
+
+            <dt class="col-sm-10">Hero profiles</dt>
+            @foreach (HeroProfile hp in categoriesValues.HeroProfiles)
+            {
+                <dd class="col-sm-10">@hp.HeroId</dd>
+            }
+
+            <dt class="col-sm-10">Answers</dt>
+            @foreach (Answer a in categoriesValues.Answers)
+            {
+                <dd class="col-sm-10">@a.Date.ToString()</dd>
+            }
+        </dl>
+        <div>
+            <a href="@($"/categoriesvalues/index")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    CategoriesValues? categoriesValues;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        categoriesValues = await DB.ReadAsync(Id, true);
+
+        if (categoriesValues is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

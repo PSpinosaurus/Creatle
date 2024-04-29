@@ -1,0 +1,99 @@
+﻿@page "/heroprofile/create"
+@inject ServiceLayer.HeroProfileManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@inject ServiceLayer.GameManager gm
+@inject ServiceLayer.CategoriesManager cm
+@inject ServiceLayer.CategoriesValuesManager cvm
+@inject ServiceLayer.HeroMetadataManager hmm;
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>Answer</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="HeroProfile" OnValidSubmit="AddHeroProfile" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <label for="game" class="col-10">Game</label>
+
+            <div>
+                <InputSelect id="game" @bind-Value="HeroProfile.GameId" class="col-10">
+                    @foreach (Game game in games)
+                    {
+                        <option value="@game.Id">@game.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <label for="category" class="col-10">Category</label>
+
+            <div>
+                <InputSelect id="category" @bind-Value="HeroProfile.CategoryId" class="col-10">
+                    @foreach (Categories category in c)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <label for="categoryValue" class="col-10">Category Value</label>
+
+            <div>
+                <InputSelect id="categoryValue" @bind-Value="HeroProfile.ValueId" class="col-10">
+                    @foreach (CategoriesValues categoryValue in cvs)
+                    {
+                        <option value="@categoryValue.Id">@categoryValue.Value</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <label for="heroMetadata" class="col-10">Hero Metadata</label>
+
+            <div>
+                <InputSelect id="heroMetadata" @bind-Value="HeroProfile.HeroId" class="col-10">
+                    @foreach (HeroMetadata heroMetadata in hm)
+                    {
+                        <option value="@heroMetadata.Id">@heroMetadata.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/answers/index">Back to List</a>
+</div>
+
+@code {
+    List<Game> games = new List<Game>();
+    List<Categories> c = new List<Categories>();
+    List<CategoriesValues> cvs = new List<CategoriesValues>();
+    List<HeroMetadata> hm = new List<HeroMetadata>();
+
+    [SupplyParameterFromForm]
+    public HeroProfile HeroProfile { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        games = (await gm.ReadAllAsync()).ToList();
+        c = (await cm.ReadAllAsync()).ToList();
+        cvs = (await cvm.ReadAllAsync()).ToList();
+        hm = (await hmm.ReadAllAsync()).ToList();
+
+        base.OnInitializedAsync();
+    }
+
+    public async Task AddHeroProfile()
+    {
+        await DB.CreateAsync(HeroProfile);
+        NavigationManager.NavigateTo("/heroprofile/index");
+    }
+}

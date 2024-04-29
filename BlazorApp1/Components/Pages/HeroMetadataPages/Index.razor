@@ -1,0 +1,47 @@
+﻿@page "/herometadata/index"
+@using BusinessLayer;
+@using ServiceLayer;
+@inject ServiceLayer.HeroMetadataManager hmm;
+
+<h3>Index</h3>
+<a href="herometadata/create">Create</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (HeroMetadata heroMetadata in model)
+        {
+            <tr>
+                <td>
+                    @heroMetadata
+                </td>
+                <td>
+                    <a href="herometadata/update/{Name:string}/{Avatar:string}">Edit</a> |
+                    <a href="herometadata/details/{Name:string}/{Avatar:string}">Details</a> |
+                    <a href="herometadata/delete/{Name:string}/{Avatar:string}">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    private IEnumerable<HeroMetadata> model = new List<HeroMetadata>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await hmm.ReadAllAsync(true);
+
+        await base.OnInitializedAsync();
+    }
+
+
+}

@@ -1,0 +1,78 @@
+﻿@page "/answers/details/{GameId:int}/{CategoryId:int}/{Year:int}/{Month:int}/{Day:int}"
+@inject ServiceLayer.AnswerManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Answer</h4>
+    <hr />
+    @if (answer is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-10">CategoryValueId</dt>
+            <dd class="col-sm-10">@answer.CategoryValueId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">CategoryValue</dt>
+            <dd class="col-sm-10">@answer.CategoryValue.Value</dd>
+        </dl>
+
+        <dl class="row">
+            <dt class="col-sm-10">GameId</dt>
+            <dd class="col-sm-10">@answer.GameId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">CategoryId</dt>
+            <dd class="col-sm-10">@answer.CategoryId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">Date</dt>
+            <dd class="col-sm-10">@answer.Date.ToString()</dd>
+        </dl>
+
+        <div>
+            <a href="@($"/answers/index")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Answer? answer;
+
+    [Parameter]
+    public int GameId { get; set; }
+
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    [Parameter]
+    public int Year { get; set; }
+
+    [Parameter]
+    public int Month { get; set; }
+
+    [Parameter]
+    public int Day { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        string date = Year + "-" + Month + "-" + Day;
+        DateTime actualDate = DateTime.Parse(date);
+        object[] key = new object[] { actualDate, CategoryId, GameId };
+        answer = await DB.ReadAsync(key, true);
+
+        if (answer is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

@@ -1,0 +1,57 @@
+﻿@page "/herometadata/details/{Id:int}"
+@inject ServiceLayer.HeroMetadataManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>HeroMetadata</h4>
+    <hr />
+    @if (heroMetadata is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-10">Name</dt>
+            <dd class="col-sm-10">@heroMetadata.Name</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">Avatar</dt>
+            <dd class="col-sm-10">@heroMetadata.Avatar</dd>
+        </dl>
+        <img src="@heroMetadata.Avatar" width="100px" height="100px" />
+
+        <dt class="col-sm-10">Hero profiles</dt>
+        @foreach (HeroProfile hp in heroMetadata.HeroProfiles)
+        {
+            <dd class="col-sm-10">@hp.HeroId</dd>
+        }
+
+        <div>
+            <a href="@($"/herometadata/index")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    HeroMetadata? heroMetadata;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        heroMetadata = await DB.ReadAsync(Id, true);
+
+        if (heroMetadata is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

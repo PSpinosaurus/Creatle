@@ -1,0 +1,95 @@
+﻿@page "/answers/create"
+@inject ServiceLayer.AnswerManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@inject ServiceLayer.GameManager gm
+@inject ServiceLayer.CategoriesManager cm
+@inject ServiceLayer.CategoriesValuesManager cvm
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>Answer</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Answer" OnValidSubmit="AddAnswer" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <label for="game" class="col-10">Game</label>
+
+            <div class="col-md-10">
+                <InputSelect id="game" @bind-Value="Answer.GameId" class="col-10">
+                    @foreach (Game game in games)
+                    {
+                        <option value="@game.Id">@game.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <label for="category" class="col-100">Category</label>
+
+            <div class="col-md-10">
+                <InputSelect id="category" @bind-Value="Answer.CategoryId" class="col-10">
+                    @foreach (Categories category in c)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <label for="categoryValue" class="col-10">Category Value</label>
+
+            <div class="col-md-10">
+                <InputSelect id="categoryValue" @bind-Value="Answer.CategoryValueId" class="col-10">
+                    @foreach (CategoriesValues categoryValue in cvs)
+                    {
+                        <option value="@categoryValue.Id">@categoryValue.Value</option>
+                    }
+                </InputSelect>
+            </div>
+
+            <label for="date" class="col-10">Date</label>
+
+            <div class="col-md-10">
+                <InputDate id="date" @bind-Value="Answer.Date" class="col-10">
+
+                </InputDate>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/answers/index">Back to List</a>
+</div>
+
+@code {
+    List<Game> games = new List<Game>();
+    List<Categories> c = new List<Categories>();
+    List<CategoriesValues> cvs = new List<CategoriesValues>();
+
+    [SupplyParameterFromForm]
+    public Answer Answer { get; set; } = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        games = (await gm.ReadAllAsync()).ToList();
+        c = (await cm.ReadAllAsync()).ToList();
+        cvs = (await cvm.ReadAllAsync()).ToList();
+
+        base.OnInitializedAsync();
+    }
+
+    public async Task AddAnswer()
+    {
+        string actualDate = Answer.Date.Year + "-" + Answer.Date.Month + "-" + Answer.Date.Day;
+        this.Answer.Date = DateTime.Parse(actualDate);
+        DB.CreateAsync(Answer);
+        NavigationManager.NavigateTo("/answers/index");
+    }
+}

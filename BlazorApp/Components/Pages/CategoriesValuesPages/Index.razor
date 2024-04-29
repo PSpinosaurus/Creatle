@@ -1,0 +1,46 @@
+﻿@page "/categoriesvalues/index"
+@using BusinessLayer;
+@using ServiceLayer;
+@inject ServiceLayer.CategoriesValuesManager hmm;
+
+<h3>Index</h3>
+<a href="categoriesvalues/create">Create</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (CategoriesValues categoriesValues in model)
+        {
+            <tr>
+                <td>
+                    @categoriesValues.Value
+                </td>
+                <td>
+                    <a href="categoriesvalues/details/@categoriesValues.Id">Details</a> |
+                    <a href="categoriesvalues/delete/@categoriesValues.Id">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    private IEnumerable<CategoriesValues> model = new List<CategoriesValues>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await hmm.ReadAllAsync(true);
+
+        await base.OnInitializedAsync();
+    }
+
+
+}

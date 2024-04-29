@@ -1,0 +1,46 @@
+﻿@page "/answers/index"
+@using BusinessLayer;
+@using ServiceLayer;
+@inject ServiceLayer.AnswerManager am;
+
+<h3>Index</h3>
+<a href="answers/create">Create</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                Name
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (Answer answer in model)
+        {
+            <tr>
+                <td>
+                    @answer.CategoryValue.Value
+                </td>
+                <td>
+                    <a href="answers/details/@answer.GameId/@answer.CategoryId/@answer.Date.Year/@answer.Date.Month/@answer.Date.Day">Details</a> |
+                    <a href="answers/delete/@answer.GameId/@answer.CategoryId/@answer.Date.Year/@answer.Date.Month/@answer.Date.Day">Delete</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code
+{
+    private IEnumerable<Answer> model = new List<Answer>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        model = await am.ReadAllAsync(true);
+
+        await base.OnInitializedAsync();
+    }
+
+
+}

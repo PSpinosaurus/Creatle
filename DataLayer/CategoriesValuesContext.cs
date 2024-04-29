@@ -99,7 +99,7 @@ namespace DataLayer
 
                 if (useNavigationalProperties)
                 {
-                    query.Include(cv => cv.Category)
+                    query = query.Include(cv => cv.Category)
                          .Include(cv => cv.HeroProfiles)
                          .Include(cv => cv.Answers);
                 }
@@ -124,7 +124,7 @@ namespace DataLayer
                 IQueryable<CategoriesValues> query = dbContext.CategoriesValues;
                 if (useNavigationalProperties)
                 {
-                    query.Include(cv => cv.Category)
+                    query = query.Include(cv => cv.Category)
                          .Include(cv => cv.HeroProfiles)
                          .Include(cv => cv.Answers);
                 }

@@ -1,0 +1,71 @@
+﻿@page "/heroprofile/details/{GameId:int}/{CategoryId:int}/{HeroId:int}/{ValueId:int}"
+@inject ServiceLayer.HeroProfileManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>HeroProfile</h4>
+    <hr />
+    @if (heroProfile is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-10">CategoryId</dt>
+            <dd class="col-sm-10">@CategoryId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">GameId</dt>
+            <dd class="col-sm-10">@GameId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">HeroId</dt>
+            <dd class="col-sm-10">@HeroId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">ValueId</dt>
+            <dd class="col-sm-10">@ValueId</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">Value</dt>
+            <dd class="col-sm-10">@heroProfile.Value.Value</dd>
+        </dl>
+        <div>
+            <a href="@($"/heroprofile/index")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    HeroProfile? heroProfile;
+
+    [Parameter]
+    public int GameId { get; set; }
+
+    [Parameter]
+    public int CategoryId { get; set; }
+
+    [Parameter]
+    public int ValueId { get; set; }
+
+    [Parameter]
+    public int HeroId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        object[] key = new object[] { ValueId, CategoryId, GameId, HeroId };
+        heroProfile = await DB.ReadAsync(key, true);
+
+        if (heroProfile is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

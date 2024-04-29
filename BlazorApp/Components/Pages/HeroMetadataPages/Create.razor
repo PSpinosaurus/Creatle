@@ -1,0 +1,47 @@
+﻿@page "/herometadata/create"
+@inject ServiceLayer.HeroMetadataManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h4>HeroMetadata</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="HeroMetadata" OnValidSubmit="AddHeroMetadata" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <label for="Name" class="col-10">Name</label>
+            <div>
+                <InputText id="Name" @bind-Value="@HeroMetadata.Name" class="col-10">
+                </InputText>
+            </div>
+
+            <label for="Avatar" class="col-10">Avatar</label>
+            <div>
+                <InputText id="Avatar" @bind-Value="@HeroMetadata.Avatar" class="col-10">
+                </InputText>
+            </div>
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+<div>
+    <a href="/herometadata/index">Back to List</a>
+</div>
+
+@code {
+
+    [SupplyParameterFromForm]
+    public HeroMetadata HeroMetadata { get; set; } = new();
+
+    public async Task AddHeroMetadata()
+    {
+        DB.CreateAsync(HeroMetadata);
+        NavigationManager.NavigateTo("/herometadata/index");
+    }
+}

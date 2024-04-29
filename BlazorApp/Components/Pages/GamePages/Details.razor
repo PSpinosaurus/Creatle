@@ -1,0 +1,66 @@
+﻿@page "/game/details/{Id:int}"
+@inject ServiceLayer.GameManager DB
+@using BusinessLayer
+@inject NavigationManager NavigationManager
+@using Microsoft.EntityFrameworkCore
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h4>Game</h4>
+    <hr />
+    @if (game is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else
+    {
+        <dl class="row">
+            <dt class="col-sm-10">Name</dt>
+            <dd class="col-sm-10">@game.Name</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">Description</dt>
+            <dd class="col-sm-10">@game.Description</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-10">Colour</dt>
+            <dd class="col-sm-10">@game.Colour</dd>
+        </dl>
+
+        <dt class="col-sm-10">Hero profiles</dt>
+        @foreach (HeroProfile hp in game.HeroesProfiles)
+        {
+            <dd class="col-sm-10">@hp.HeroId</dd>
+        }
+
+        <dt class="col-sm-10">Answers</dt>
+        @foreach (Answer a in game.Answers)
+        {
+            <dd class="col-sm-10">@a.Date.ToString()</dd>
+        }
+
+        <div>
+            <a href="@($"/games/index")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    Game? game;
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        game = await DB.ReadAsync(Id, true);
+
+        if (game is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}
